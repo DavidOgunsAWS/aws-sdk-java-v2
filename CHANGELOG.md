@@ -203,11 +203,6 @@ Special thanks to the following contributors to this release:
 # __2.17.292__ __2022-10-14__
 ## __AWS Elemental MediaConvert__
   - ### Features
-    - Enable JDK9+ builds to produce JRE8 compatible jar.
-
-# __2.17.292__ __2022-10-14__
-## __AWS Elemental MediaConvert__
-  - ### Features
     - MediaConvert now supports specifying the minimum percentage of the HRD buffer available at the end of each encoded video segment.
 
 ## __AWS SDK for Java v2__
