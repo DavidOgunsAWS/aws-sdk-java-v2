@@ -589,6 +589,7 @@
                             <includeModule>aws-core</includeModule>
                             <includeModule>json-utils</includeModule>
                             <includeModule>metrics-spi</includeModule>
+                            <includeModule>retries-api</includeModule>
                             <includeModule>profiles</includeModule>
                             <includeModule>protocols</includeModule>
                             <includeModule>regions</includeModule>

@@ -43,6 +43,8 @@
         <module>regions</module>
         <module>protocols</module>
         <module>metrics-spi</module>
+        <module>retries-api</module>
+        <module>retries</module>
         <module>json-utils</module>
         <module>endpoints-spi</module>
     </modules>
