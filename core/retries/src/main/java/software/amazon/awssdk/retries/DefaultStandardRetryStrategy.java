@@ -28,7 +28,7 @@ import software.amazon.awssdk.retriesapi.RetryStrategy;
 import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 
 @SdkProtectedApi
-class DefaultStandardRetryStrategy implements StandardRetryStrategy, ToCopyableBuilder<DefaultStandardRetryStrategy.Builder> {
+class DefaultStandardRetryStrategy implements StandardRetryStrategy {
     private final int maxAttempts;
     private Predicate<? extends Throwable> retryPredicate;
     private BackoffStrategy backoffStrategy;
