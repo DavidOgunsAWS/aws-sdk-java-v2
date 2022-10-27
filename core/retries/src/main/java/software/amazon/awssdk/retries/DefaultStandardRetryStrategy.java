@@ -25,21 +25,31 @@ import software.amazon.awssdk.retriesapi.RecordSuccessResponse;
 import software.amazon.awssdk.retriesapi.RefreshRetryTokenRequest;
 import software.amazon.awssdk.retriesapi.RefreshRetryTokenResponse;
 import software.amazon.awssdk.retriesapi.RetryStrategy;
-import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
+import software.amazon.awssdk.utils.Logger;
 
 @SdkProtectedApi
 class DefaultStandardRetryStrategy implements StandardRetryStrategy {
+    private static final Logger LOGGER = Logger.loggerFor(DefaultStandardRetryStrategy.class);
     private final int maxAttempts;
-    private Predicate<? extends Throwable> retryPredicate;
-    private BackoffStrategy backoffStrategy;
-    private boolean circuitBreakerEnabled;
+    private final Predicate<? extends Throwable> retryPredicate;
+    private final BackoffStrategy backoffStrategy;
+    private final boolean circuitBreakerEnabled;
 
     protected DefaultStandardRetryStrategy(Builder builder) {
+        //TODO: non-null validation
         this.maxAttempts = builder.maxAttempts;
+        this.retryPredicate = builder.retryPredicate;
+        this.backoffStrategy = builder.backoffStrategy;
+        this.circuitBreakerEnabled = builder.circuitBreakerEnabled;
     }
 
     @Override
     public AcquireInitialTokenResponse acquireInitialToken(AcquireInitialTokenRequest request) {
+        //TODO: spotbug violation clearing
+        LOGGER.info(() -> String.format("Max attempts: %d", maxAttempts));
+        LOGGER.info(() -> String.format("RetryPredicate: %s", retryPredicate.toString()));
+        LOGGER.info(() -> String.format("BackoffStrategy: %s", backoffStrategy.toString()));
+        LOGGER.info(() -> String.format("CircuitBreaker enabled?: %b", circuitBreakerEnabled));
         return null;
     }
 
@@ -54,7 +64,7 @@ class DefaultStandardRetryStrategy implements StandardRetryStrategy {
     }
 
     @Override
-    public Builder<DefaultStandardRetryStrategy> toBuilder() {
+    public RetryStrategy.Builder<? extends DefaultStandardRetryStrategy> toBuilder() {
         return null;
     }
 
@@ -98,45 +108,93 @@ class DefaultStandardRetryStrategy implements StandardRetryStrategy {
         @Override
         public Builder retryOnException(Predicate<Throwable> shouldRetry) {
             retryPredicate = (t) -> {
-                // TODO: wrap this
+                // TODO: wrap this to catch exception if predicate fails
                 return shouldRetry.test(t);
             };
             return this;
         }
 
         @Override
-        public Builder retryOnException(Class<? extends Throwable> throwable) {
-
+        public Builder retryOnException(Class<? extends Throwable> throwableClass) {
+            retryPredicate = (Throwable t) -> {
+                return throwableClass.getClass().equals(t.getClass());
+            };
             return this;
         }
 
         @Override
-        public Builder retryOnExceptionInstanceOf(Class<? extends Throwable> throwable) {
+        public Builder retryOnExceptionInstanceOf(Class<? extends Throwable> throwableClass) {
+            retryPredicate = (Throwable t) -> {
+                return throwableClass.isInstance(t);
+            };
             return this;
         }
 
         @Override
-        public Builder retryOnExceptionOrCause(Class<? extends Throwable> throwable) {
+        public Builder retryOnExceptionOrCause(Class<? extends Throwable> throwableClass) {
+            retryPredicate = (Throwable t) -> {
+                if (throwableClass.getClass().equals(t.getClass())) {
+                    return true;
+                }
+                Throwable cause = t.getCause();
+                while (cause != null) {
+                    // TODO: instance of or assignable from?
+                    if (throwableClass.getClass().equals(cause.getClass())) {
+                        return true;
+                    }
+                    cause = cause.getCause();
+                }
+                return false;
+            };
             return this;
         }
 
         @Override
-        public Builder retryOnExceptionOrCauseInstanceOf(Class<? extends Throwable> throwable) {
+        public Builder retryOnExceptionOrCauseInstanceOf(Class<? extends Throwable> throwableClass) {
+            retryPredicate = (Throwable t) -> {
+                if (throwableClass.isInstance(t)) {
+                    return true;
+                }
+                Throwable cause = t.getCause();
+                while (cause != null) {
+                    // TODO: instance of or assignable from?
+                    if (throwableClass.isInstance(cause)) {
+                        return true;
+                    }
+                    cause = cause.getCause();
+                }
+                return false;
+            };
             return this;
         }
 
         @Override
-        public Builder retryOnRootCause(Class<? extends Throwable> throwable) {
+        public Builder retryOnRootCause(Class<? extends Throwable> throwableClass) {
+            retryPredicate = (Throwable t) -> {
+                Throwable rootCause = t;
+                while (rootCause.getCause() != null) {
+                    rootCause = rootCause.getCause();
+                }
+                return rootCause.getClass().equals(throwableClass);
+            };
             return this;
         }
 
         @Override
         public Builder retryOnRootCauseInstanceOf(Class<? extends Throwable> throwable) {
+            retryPredicate = (Throwable t) -> {
+                Throwable rootCause = t;
+                while (rootCause.getCause() != null) {
+                    rootCause = rootCause.getCause();
+                }
+                return false;
+            };
             return this;
         }
 
         @Override
         public Builder maxAttempts(int maxAttempts) {
+            this.maxAttempts = maxAttempts;
             return this;
         }
 

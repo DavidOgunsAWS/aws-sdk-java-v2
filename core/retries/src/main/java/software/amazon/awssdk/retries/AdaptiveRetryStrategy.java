@@ -62,9 +62,9 @@ interface AdaptiveRetryStrategy extends RetryStrategy {
     }
 
     @Override
-    RetryStrategy.Builder<AdaptiveRetryStrategy> toBuilder();
+    RetryStrategy.Builder<? extends AdaptiveRetryStrategy> toBuilder();
 
-    interface Builder extends RetryStrategy.Builder<AdaptiveRetryStrategy> {
+    interface Builder extends RetryStrategy.Builder<Builder> {
         @Override
         AdaptiveRetryStrategy build();
     }

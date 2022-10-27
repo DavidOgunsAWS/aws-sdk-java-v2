@@ -19,7 +19,6 @@ import software.amazon.awssdk.annotations.SdkPublicApi;
 import software.amazon.awssdk.annotations.ThreadSafe;
 import software.amazon.awssdk.retriesapi.BackoffStrategy;
 import software.amazon.awssdk.retriesapi.RetryStrategy;
-import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 
 /**
  * The standard retry strategy is the recommended {@link RetryStrategy} for normal use-cases.
