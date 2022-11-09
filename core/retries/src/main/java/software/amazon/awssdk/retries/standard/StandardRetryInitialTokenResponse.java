@@ -26,19 +26,27 @@ import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 public class StandardRetryInitialTokenResponse implements
         AcquireInitialTokenResponse,
         ToCopyableBuilder<StandardRetryInitialTokenResponse.Builder, StandardRetryInitialTokenResponse> {
+    private final RetryToken retryToken;
+    private final Duration delay;
+
+    private StandardRetryInitialTokenResponse(Builder builder) {
+        this.retryToken = builder.retryToken;
+        this.delay = builder.delay;
+    }
+
     @Override
     public RetryToken token() {
-        return null;
+        return retryToken;
     }
 
     @Override
     public Duration delay() {
-        return null;
+        return delay;
     }
 
     @Override
     public Builder toBuilder() {
-        return null;
+        return new Builder(this);
     }
 
     public static Builder builder() {
@@ -46,10 +54,32 @@ public class StandardRetryInitialTokenResponse implements
     }
 
     public static class Builder implements CopyableBuilder<Builder, StandardRetryInitialTokenResponse> {
+        private RetryToken retryToken;
+        private Duration delay;
+
+        private Builder() {
+            retryToken = null; //TODO: fix
+            delay = Duration.ofMillis(0);
+        }
+
+        private Builder(StandardRetryInitialTokenResponse copy) {
+            retryToken = copy.retryToken;
+            delay = copy.delay;
+        }
+
+        public Builder retryToken(RetryToken token) {
+            this.retryToken = token;
+            return this;
+        }
+
+        public Builder delay(Duration delay) {
+            this.delay = delay;
+            return this;
+        }
 
         @Override
         public StandardRetryInitialTokenResponse build() {
-            return null;
+            return new StandardRetryInitialTokenResponse(this);
         }
     }
 }

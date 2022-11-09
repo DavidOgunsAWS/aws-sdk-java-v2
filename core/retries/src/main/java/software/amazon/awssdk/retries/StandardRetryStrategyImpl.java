@@ -15,6 +15,7 @@
 
 package software.amazon.awssdk.retries;
 
+import java.time.Duration;
 import java.util.function.Predicate;
 import software.amazon.awssdk.annotations.SdkProtectedApi;
 import software.amazon.awssdk.retries.standard.StandardRetryInitialTokenResponse;
@@ -49,7 +50,9 @@ public class StandardRetryStrategyImpl implements StandardRetryStrategy {
 
     @Override
     public AcquireInitialTokenResponse acquireInitialToken(AcquireInitialTokenRequest request) {
-        StandardRetryInitialTokenResponse.Builder builder = StandardRetryInitialTokenResponse.builder();
+        StandardRetryInitialTokenResponse.Builder builder = StandardRetryInitialTokenResponse.builder()
+                .delay(Duration.ZERO).retryToken(null);
+
 
         //TODO: spotbugs violation clearing
         LOGGER.info(() -> String.format("Max attempts: %d", maxAttempts));
