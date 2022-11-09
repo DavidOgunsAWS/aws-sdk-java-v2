@@ -17,6 +17,7 @@ package software.amazon.awssdk.retries;
 
 import java.util.function.Predicate;
 import software.amazon.awssdk.annotations.SdkProtectedApi;
+import software.amazon.awssdk.retries.standard.StandardRetryInitialTokenResponse;
 import software.amazon.awssdk.retriesapi.AcquireInitialTokenRequest;
 import software.amazon.awssdk.retriesapi.AcquireInitialTokenResponse;
 import software.amazon.awssdk.retriesapi.BackoffStrategy;
@@ -27,15 +28,18 @@ import software.amazon.awssdk.retriesapi.RefreshRetryTokenResponse;
 import software.amazon.awssdk.retriesapi.RetryStrategy;
 import software.amazon.awssdk.utils.Logger;
 
+/**
+ * TODO: javadoc needed
+ */
 @SdkProtectedApi
-class DefaultStandardRetryStrategy implements StandardRetryStrategy {
-    private static final Logger LOGGER = Logger.loggerFor(DefaultStandardRetryStrategy.class);
+public class StandardRetryStrategyImpl implements StandardRetryStrategy {
+    private static final Logger LOGGER = Logger.loggerFor(StandardRetryStrategyImpl.class);
     private final int maxAttempts;
     private final Predicate<? extends Throwable> retryPredicate;
     private final BackoffStrategy backoffStrategy;
     private final boolean circuitBreakerEnabled;
 
-    protected DefaultStandardRetryStrategy(Builder builder) {
+    protected StandardRetryStrategyImpl(Builder builder) {
         //TODO: non-null validation
         this.maxAttempts = builder.maxAttempts;
         this.retryPredicate = builder.retryPredicate;
@@ -45,12 +49,14 @@ class DefaultStandardRetryStrategy implements StandardRetryStrategy {
 
     @Override
     public AcquireInitialTokenResponse acquireInitialToken(AcquireInitialTokenRequest request) {
-        //TODO: spotbug violation clearing
+        StandardRetryInitialTokenResponse.Builder builder = StandardRetryInitialTokenResponse.builder();
+
+        //TODO: spotbugs violation clearing
         LOGGER.info(() -> String.format("Max attempts: %d", maxAttempts));
         LOGGER.info(() -> String.format("RetryPredicate: %s", retryPredicate.toString()));
         LOGGER.info(() -> String.format("BackoffStrategy: %s", backoffStrategy.toString()));
         LOGGER.info(() -> String.format("CircuitBreaker enabled?: %b", circuitBreakerEnabled));
-        return null;
+        return builder.build();
     }
 
     @Override
@@ -64,15 +70,29 @@ class DefaultStandardRetryStrategy implements StandardRetryStrategy {
     }
 
     @Override
-    public RetryStrategy.Builder<? extends DefaultStandardRetryStrategy> toBuilder() {
+    public RetryStrategy.Builder<? extends StandardRetryStrategy> toBuilder() {
         return null;
     }
 
-    public static class Builder implements RetryStrategy.Builder<DefaultStandardRetryStrategy.Builder> {
-        private int maxAttempts = 5; // TODO: find appropriate source for this
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder implements StandardRetryStrategy.Builder {
+        private int maxAttempts;
         private Predicate<? extends Throwable> retryPredicate;
         private BackoffStrategy backoffStrategy;
         private boolean circuitBreakerEnabled;
+
+        private Builder() {
+        }
+
+        private Builder(StandardRetryStrategyImpl copy) {
+            this.maxAttempts = copy.maxAttempts;
+            this.retryPredicate = copy.retryPredicate;
+            this.backoffStrategy = copy.backoffStrategy;
+            this.circuitBreakerEnabled = copy.circuitBreakerEnabled;
+        }
 
         /**
          * Configure the backoff strategy used by this executor.
@@ -199,8 +219,8 @@ class DefaultStandardRetryStrategy implements StandardRetryStrategy {
         }
 
         @Override
-        public RetryStrategy build() {
-            return new DefaultStandardRetryStrategy(this);
+        public StandardRetryStrategyImpl build() {
+            return new StandardRetryStrategyImpl(this);
         }
     }
 }

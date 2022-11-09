@@ -39,8 +39,7 @@ final class RetryStrategies {
      * </pre>
      */
     static StandardRetryStrategy.Builder standardStrategyBuilder() {
-        // TODO: implement
-        return null;
+        return StandardRetryStrategyImpl.builder();
     }
 
     /**

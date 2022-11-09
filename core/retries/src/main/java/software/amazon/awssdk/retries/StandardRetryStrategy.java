@@ -27,8 +27,9 @@ import software.amazon.awssdk.retriesapi.RetryStrategy;
  *
  * The standard retry strategy by default:
  * <ol>
- *     <li>Retries on the conditions configured in the {@link Builder}.
- *     <li>Retries 2 times (3 total attempts). Adjust with {@link Builder#maxRetries}
+ *     <li>Retries on the conditions configured in the {@link software.amazon.awssdk.retriesapi.RetryStrategy.Builder}.
+ *     <li>Retries 2 times (3 total attempts). Adjust with
+ *     {@link software.amazon.awssdk.retriesapi.RetryStrategy.Builder#maxRetries}
  *     <li>Uses the {@link BackoffStrategy#exponentialDelay} backoff strategy, with a base delay of
  *     1 second and max delay of 20 seconds. Adjust with {@link Builder#backoffStrategy}
  *     <li>Circuit breaking (disabling retries) in the event of high downstream failures across the scope of
@@ -55,8 +56,7 @@ public interface StandardRetryStrategy extends RetryStrategy {
      * </pre>
      */
     static Builder builder() {
-        return null;
-        //return new DefaultStandardRetryStrategy.Builder();
+        return RetryStrategies.standardStrategyBuilder();
     }
 
     interface Builder extends RetryStrategy.Builder<Builder> {
@@ -74,9 +74,9 @@ public interface StandardRetryStrategy extends RetryStrategy {
          * retry mode circuit breakers will prevent attempts (even below the {@link #maxAttempts(int)})
          * if a large number of failures are observed by this executor.
          *
-         * <p>Note: The circuit breaker scope is local to the created {@link software.amazon.awssdk.api.retries.RetryStrategy},
-         * and will therefore not be effective unless the {@link software.amazon.awssdk.api.retries.RetryStrategy} is used for
-         * more than one call. It's recommended that a {@link software.amazon.awssdk.api.retries.RetryStrategy} be reused for
+         * <p>Note: The circuit breaker scope is local to the created {@link software.amazon.awssdk.retriesapi.RetryStrategy},
+         * and will therefore not be effective unless the {@link software.amazon.awssdk.retriesapi.RetryStrategy} is used for
+         * more than one call. It's recommended that a {@link software.amazon.awssdk.retriesapi.RetryStrategy} be reused for
          * all calls to a single unreliable resource. It's also recommended that separate
          * {@link software.amazon.awssdk.api.retries.RetryStrategy}s be used for calls to unrelated resources.
          *

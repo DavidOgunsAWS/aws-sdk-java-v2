@@ -13,23 +13,16 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.awssdk.retriesapi;
+package software.amazon.awssdk.retries.standard;
 
-import java.time.Duration;
-import software.amazon.awssdk.annotations.SdkPublicApi;
-import software.amazon.awssdk.annotations.ThreadSafe;
+import software.amazon.awssdk.annotations.SdkProtectedApi;
+import software.amazon.awssdk.retriesapi.AcquireInitialTokenRequest;
 
-@SdkPublicApi
-@ThreadSafe
-public interface AcquireInitialTokenResponse {
-    /**
-     * A {@link RetryToken} acquired by this invocation, used in subsequent
-     * {@link RetryStrategy#refreshRetryToken} or {@link RetryStrategy#recordSuccess} calls.
-     */
-    RetryToken token();
+@SdkProtectedApi
+public class StandardRetryInitialTokenRequest implements AcquireInitialTokenRequest {
 
-    /**
-     * The amount of time to wait before performing the first attempt.
-     */
-    Duration delay();
+    @Override
+    public String scope() {
+        return null;
+    }
 }

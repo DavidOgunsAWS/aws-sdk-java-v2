@@ -15,21 +15,20 @@
 
 package software.amazon.awssdk.retriesapi;
 
-import java.time.Duration;
-import software.amazon.awssdk.annotations.SdkPublicApi;
-import software.amazon.awssdk.annotations.ThreadSafe;
+import software.amazon.awssdk.annotations.SdkProtectedApi;
 
-@SdkPublicApi
-@ThreadSafe
-public interface AcquireInitialTokenResponse {
-    /**
-     * A {@link RetryToken} acquired by this invocation, used in subsequent
-     * {@link RetryStrategy#refreshRetryToken} or {@link RetryStrategy#recordSuccess} calls.
-     */
-    RetryToken token();
+@SdkProtectedApi
+interface RetryErrorTypedException<T extends Exception> {
 
     /**
-     * The amount of time to wait before performing the first attempt.
+     * Retrieves generic retry error metadata modeled in the exception.
+     *
+     * Implementations may have a class static determination of error type,
+     * or use logic dependent on
+     *
+     *
+     *
+     * @return
      */
-    Duration delay();
+    RetryErrorType getRetryErrorType();
 }

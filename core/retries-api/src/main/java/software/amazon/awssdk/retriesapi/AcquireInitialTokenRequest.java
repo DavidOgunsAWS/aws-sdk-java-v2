@@ -20,7 +20,6 @@ import software.amazon.awssdk.annotations.ThreadSafe;
 
 @SdkPublicApi
 @ThreadSafe
-//TODO: is this Lombok? @Data
 public interface AcquireInitialTokenRequest {
     /**
      * An abstract scope for the attempts about to be executed.
