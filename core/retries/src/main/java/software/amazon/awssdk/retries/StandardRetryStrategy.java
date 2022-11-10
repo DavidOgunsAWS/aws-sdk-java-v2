@@ -42,7 +42,6 @@ import software.amazon.awssdk.retriesapi.RetryStrategy;
 @SdkPublicApi
 @ThreadSafe
 public interface StandardRetryStrategy extends RetryStrategy {
-
     /**
      * Create a new {@link StandardRetryStrategy.Builder}.
      *

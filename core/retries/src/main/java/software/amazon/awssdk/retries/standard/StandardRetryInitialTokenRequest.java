@@ -20,9 +20,14 @@ import software.amazon.awssdk.retriesapi.AcquireInitialTokenRequest;
 
 @SdkProtectedApi
 public class StandardRetryInitialTokenRequest implements AcquireInitialTokenRequest {
+    private final String scope;
+
+    public StandardRetryInitialTokenRequest(String scope) {
+        this.scope = scope;
+    }
 
     @Override
     public String scope() {
-        return null;
+        return scope;
     }
 }

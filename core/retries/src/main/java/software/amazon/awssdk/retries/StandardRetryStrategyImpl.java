@@ -15,10 +15,10 @@
 
 package software.amazon.awssdk.retries;
 
-import java.time.Duration;
 import java.util.function.Predicate;
 import software.amazon.awssdk.annotations.SdkProtectedApi;
 import software.amazon.awssdk.retries.standard.StandardRetryInitialTokenResponse;
+import software.amazon.awssdk.retries.standard.StandardRetryToken;
 import software.amazon.awssdk.retriesapi.AcquireInitialTokenRequest;
 import software.amazon.awssdk.retriesapi.AcquireInitialTokenResponse;
 import software.amazon.awssdk.retriesapi.BackoffStrategy;
@@ -27,6 +27,7 @@ import software.amazon.awssdk.retriesapi.RecordSuccessResponse;
 import software.amazon.awssdk.retriesapi.RefreshRetryTokenRequest;
 import software.amazon.awssdk.retriesapi.RefreshRetryTokenResponse;
 import software.amazon.awssdk.retriesapi.RetryStrategy;
+import software.amazon.awssdk.retriesapi.TokenAcquisitionFailedException;
 import software.amazon.awssdk.utils.Logger;
 
 /**
@@ -36,12 +37,12 @@ import software.amazon.awssdk.utils.Logger;
 public class StandardRetryStrategyImpl implements StandardRetryStrategy {
     private static final Logger LOGGER = Logger.loggerFor(StandardRetryStrategyImpl.class);
     private final int maxAttempts;
-    private final Predicate<? extends Throwable> retryPredicate;
+    private final Predicate<Throwable> retryPredicate;
     private final BackoffStrategy backoffStrategy;
     private final boolean circuitBreakerEnabled;
 
     protected StandardRetryStrategyImpl(Builder builder) {
-        //TODO: non-null validation
+        //TODO: non-null parameter validation
         this.maxAttempts = builder.maxAttempts;
         this.retryPredicate = builder.retryPredicate;
         this.backoffStrategy = builder.backoffStrategy;
@@ -51,50 +52,89 @@ public class StandardRetryStrategyImpl implements StandardRetryStrategy {
     @Override
     public AcquireInitialTokenResponse acquireInitialToken(AcquireInitialTokenRequest request) {
         StandardRetryInitialTokenResponse.Builder builder = StandardRetryInitialTokenResponse.builder()
-                .delay(Duration.ZERO).retryToken(null);
+                .retryToken(StandardRetryToken.builder()
+                        .retriesAttempted(0).build());
 
-
-        //TODO: spotbugs violation clearing
         LOGGER.info(() -> String.format("Max attempts: %d", maxAttempts));
         LOGGER.info(() -> String.format("RetryPredicate: %s", retryPredicate.toString()));
         LOGGER.info(() -> String.format("BackoffStrategy: %s", backoffStrategy.toString()));
         LOGGER.info(() -> String.format("CircuitBreaker enabled?: %b", circuitBreakerEnabled));
+
         return builder.build();
     }
 
     @Override
     public RefreshRetryTokenResponse refreshRetryToken(RefreshRetryTokenRequest request) {
+        if (!(request.token() instanceof StandardRetryToken)) {
+            //TODO: or is this an IllegalArgumentException?
+            throw new IllegalArgumentException("Incompatiable RetryToken supplied");
+        }
+        StandardRetryToken token = (StandardRetryToken) request.token();
+
+        //verify if retryable exception occurred at all
+        boolean retryableFailure = retryPredicate.test(request.failure());
+        if (!retryableFailure) {
+            throw new TokenAcquisitionFailedException("Non-retryable exception occurred");
+        }
+
+        //verify if we exhausted attempts first
+        boolean exhaustedRetries = token.retriesAttempted() < maxAttempts;
+        if (exhaustedRetries) {
+            throw new TokenAcquisitionFailedException("Retries exhausted");
+        }
+
+        //verify if the scope "bucket" has enough resources to perform a retry now
+        if (circuitBreakerEnabled && !canRetryForScope(token)) {
+            throw new TokenAcquisitionFailedException("Retry unavailable or scope: " + token.scope());
+        }
+
+        StandardRetryToken.Builder newTokenBuilder = StandardRetryToken.builder()
+            .retriesAttempted(token.retriesAttempted() + 1);
+
+
+
         return null;
+    }
+
+    private boolean canRetryForScope(StandardRetryToken token) {
+        return true; //TODO: implement bucket resource
+    }
+
+    private void recordSuccessInScope(StandardRetryToken token) {
+
     }
 
     @Override
     public RecordSuccessResponse recordSuccess(RecordSuccessRequest request) {
+
         return null;
     }
 
     @Override
+    // Builder<? extends RetryStrategy> toBuilder();
     public RetryStrategy.Builder<? extends StandardRetryStrategy> toBuilder() {
-        return null;
+        return new Builder(this);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
+    // interface Builder extends RetryStrategy.Builder<Builder> {
     public static class Builder implements StandardRetryStrategy.Builder {
         private int maxAttempts;
-        private Predicate<? extends Throwable> retryPredicate;
+        private Predicate<Throwable> retryPredicate;
         private BackoffStrategy backoffStrategy;
         private boolean circuitBreakerEnabled;
 
         private Builder() {
         }
 
-        private Builder(StandardRetryStrategyImpl copy) {
-            this.maxAttempts = copy.maxAttempts;
-            this.retryPredicate = copy.retryPredicate;
-            this.backoffStrategy = copy.backoffStrategy;
-            this.circuitBreakerEnabled = copy.circuitBreakerEnabled;
+        private Builder(StandardRetryStrategyImpl from) {
+            this.maxAttempts = from.maxAttempts;
+            this.retryPredicate = from.retryPredicate;
+            this.backoffStrategy = from.backoffStrategy;
+            this.circuitBreakerEnabled = from.circuitBreakerEnabled;
         }
 
         /**

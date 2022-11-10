@@ -19,8 +19,17 @@ import software.amazon.awssdk.annotations.SdkPublicApi;
 
 @SdkPublicApi
 public class TokenAcquisitionFailedException extends RuntimeException {
-    public TokenAcquisitionFailedException() {
-        // TODO:
-        super("Failed to RetryToken for retries");
+    /**
+     * Exception construction accepting message with no root cause.
+     */
+    public TokenAcquisitionFailedException(String msg) { 
+        super(msg);
+    }
+
+    /**
+     * Exception constructor accepting message and a root cause.
+     */
+    public TokenAcquisitionFailedException(String msg, Throwable cause) { 
+        super(msg, cause);
     }
 }

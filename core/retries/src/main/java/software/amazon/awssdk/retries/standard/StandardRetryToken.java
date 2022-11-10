@@ -20,6 +20,7 @@ import software.amazon.awssdk.annotations.SdkProtectedApi;
 import software.amazon.awssdk.core.SdkRequest;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
 import software.amazon.awssdk.retries.StandardRetryStrategyImpl;
+import software.amazon.awssdk.retriesapi.RetryToken;
 import software.amazon.awssdk.utils.builder.CopyableBuilder;
 import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 
@@ -29,14 +30,18 @@ import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
  */
 @Immutable
 @SdkProtectedApi
-public final class StandardRetryToken implements
-         ToCopyableBuilder<StandardRetryToken.Builder, StandardRetryToken> {
+public final class StandardRetryToken
+        implements
+            RetryToken,
+            ToCopyableBuilder<StandardRetryToken.Builder, StandardRetryToken> {
 
+    private final String scope;
     private final SdkRequest originalRequest;
     private final ExecutionAttributes executionAttributes;
     private final int retriesAttempted;
 
     private StandardRetryToken(Builder builder) {
+        this.scope = builder.scope;
         this.originalRequest = builder.originalRequest;
         this.executionAttributes = builder.executionAttributes;
         this.retriesAttempted = builder.retriesAttempted;
@@ -44,6 +49,13 @@ public final class StandardRetryToken implements
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    /*
+     * @return The scope for the entire request
+     */
+    public String scope() {
+        return scope;
     }
 
     /**
@@ -79,7 +91,8 @@ public final class StandardRetryToken implements
         return new Builder(this);
     }
 
-    static final class Builder implements CopyableBuilder<Builder, StandardRetryToken> {
+    public static final class Builder implements CopyableBuilder<Builder, StandardRetryToken> {
+        private String scope;
         private SdkRequest originalRequest;
         private ExecutionAttributes executionAttributes;
         private int retriesAttempted;
@@ -88,9 +101,15 @@ public final class StandardRetryToken implements
         }
 
         private Builder(StandardRetryToken copy) {
+            this.scope = copy.scope;
             this.originalRequest = copy.originalRequest;
             this.executionAttributes = copy.executionAttributes;
             this.retriesAttempted = copy.retriesAttempted;
+        }
+
+        public Builder scope(String scope) {
+            this.scope = scope;
+            return this;
         }
 
         public Builder originalRequest(SdkRequest originalRequest) {
