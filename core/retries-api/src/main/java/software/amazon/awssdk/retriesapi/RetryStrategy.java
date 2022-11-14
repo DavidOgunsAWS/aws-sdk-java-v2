@@ -87,7 +87,7 @@ public interface RetryStrategy {
      *
      * <p>This is useful for modifying the strategy's behavior, like conditions or max retries.
      */
-    Builder<? extends RetryStrategy> toBuilder();
+    Builder<?> toBuilder();
 
     interface Builder<B extends Builder<B>> {
         /**

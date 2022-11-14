@@ -112,7 +112,7 @@ public class StandardRetryStrategyImpl implements StandardRetryStrategy {
 
     @Override
     // Builder<? extends RetryStrategy> toBuilder();
-    public RetryStrategy.Builder<? extends StandardRetryStrategy> toBuilder() {
+    public RetryStrategy.Builder<StandardRetryStrategy.Builder> toBuilder() {
         return new Builder(this);
     }
 
@@ -120,7 +120,7 @@ public class StandardRetryStrategyImpl implements StandardRetryStrategy {
         return new Builder();
     }
 
-    // interface Builder extends RetryStrategy.Builder<Builder> {
+    // interface Builder extends RetryStrategy.Builder<StandardRetryStrategy.Builder> {
     public static class Builder implements StandardRetryStrategy.Builder {
         private int maxAttempts;
         private Predicate<Throwable> retryPredicate;
